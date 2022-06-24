@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # CMD tail -f /dev/null
 
-CMD "pytest -v -m account --html=./reports/report.html"
+CMD ["pytest", "-v", "-m account", "--html=report.html"]
