@@ -7,7 +7,7 @@ import requests
 
 class MiracleCloud():
 
-    host = "https://cm.rkitsoftware.com/mrapi/MRAPI/"
+    host = "https://cloud.rkitsoftware.com/mrapi/MRAPI/"
 
     endpoints = {
         "login": f"{host}CLCMC01/ValidateUser",
