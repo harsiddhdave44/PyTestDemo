@@ -8,6 +8,6 @@ ENV pytest_marker=
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN ["pytest", "-v", "--html=./reports/report.html"]
+RUN ["pytest", "-v", "-m account" ,"--html=./reports/report.html"]
 
 CMD tail -f /dev/null
