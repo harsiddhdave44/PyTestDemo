@@ -13,5 +13,5 @@ def test_createAccount():
 @pytest.mark.product
 def test_createProduct():
     cm = MiracleCloud()
-    cm.selectCompanyAndBranchUnit(819)
+    cm.selectCompanyAndBranchUnit(1213)
     assert cm.createProduct() == True
