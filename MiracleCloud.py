@@ -1,6 +1,5 @@
 import json
 import random
-import pytest
 
 import requests
 
@@ -37,6 +36,8 @@ class MiracleCloud():
         else:
             print("Login failed\n" + response.content)
             raise Exception("Login to Miracle Cloud has failed. Exiting...")
+
+# region Company Operations
 
     def createCompany(self):
         print("Entered 'CreateCompany'")
@@ -99,7 +100,9 @@ class MiracleCloud():
         print("Company Selection Token:" + companyToken)
         self.authToken = self.setBranchUnit(companyToken)
         print("Final Token: " + str(self.authToken))
+# endregion
 
+# region Account Opeartions
     def createAccount(self):
         accId = random.randint(0, 999)
         dataModel = self.fetchAccDataModel()
@@ -123,6 +126,24 @@ class MiracleCloud():
                   str(response.content))
             return False
 
+    def getAllAccounts(self):
+        url = f"{self.host}CLYMA01/GetDDLData"
+
+        payload = {}
+        headers = {'Authorization': f'Bearer {self.authToken}'}
+
+        response = requests.get(url, headers=headers, data=payload)
+
+        if (response.status_code == 200):
+            print("Account List fetched!")
+            # Returns the list of accounts in the selected company
+            return response.json()['Data']
+        else:
+            print("Couldn't fetch the accounts list, exiting")
+            return False
+# endregion
+
+# region Prodcut Operations
     def createProduct(self):
         url = f"{self.host}/mrapi/MRAPI/CLYMP01"
 
@@ -144,6 +165,63 @@ class MiracleCloud():
             print(f"Error adding product. Message: {response.text}")
             return False
 
+    def getAllProducts(self):
+        url = f"{self.host}CLYMP01/GetDDLData"
+
+        headers = {'Authorization': f'Bearer {self.authToken}'}
+
+        response = requests.get(url, headers=headers)
+
+        productList = response.json()['Data']
+        if (response.status_code == 200 and productList != None):
+            return productList
+        else:
+            print(f"Error fetching products, Message: {response.text}")
+            return False
+
+    def editProduct(self):
+        url = f"{self.host}CLYMP01"
+        prodId = random.choice(self.getAllProducts())['P01101']
+        print(f"Selected product id {prodId} for editing\n")
+        dataModel = self.fetchProdDataModel()
+        self.setProductIds(dataModel, prodId)
+        dataModel[
+            'P01102'] = f"ProductChangedFromPytest{prodId}{random.randint(0, 9999)}"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.authToken}'
+        }
+
+        response = requests.put(url,
+                                headers=headers,
+                                data=json.dumps(dataModel))
+        if (response.status_code == 200):
+            print(f"Edited the product {dataModel['P01102']} succefully!")
+            return True
+        else:
+            print(f"Failed to edit the product. \nError {response.text}")
+            return False
+
+    def deleteProduct(self):
+        prodId = random.choice(self.getAllProducts())['P01101']
+        url = f"{self.host}CLYMP01?id={prodId}"
+
+        headers = {'Authorization': f'Bearer {self.authToken}'}
+        response = requests.delete(url, headers=headers)
+        if (response.status_code == 200):
+            print("Deleted product successfully")
+            return True
+        else:
+            print(f"Error fetching products, Message: {response.text}")
+            return False
+# endregion
+
+# region Helpers
+    def setProductIds(self, dataModel, prodId):
+        dataModel['P01101'] = prodId
+        dataModel['DTOYMP03']['P03102'] = prodId
+        dataModel['DTOYMP06']['P06101'] = prodId
+
     def fetchProdDataModel(self):
         with open("ProductModel.json", "r") as dataModelFile:
             jsonModel = json.load(dataModelFile)
@@ -153,3 +231,4 @@ class MiracleCloud():
         with open("AddAccountModel.json", "r") as dataModelFile:
             jsonModel = json.load(dataModelFile)
             return jsonModel
+# endregion
